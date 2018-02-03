@@ -1,78 +1,91 @@
-from tkinter import *
+#import tkinter
+from Tkinter import *
+from tkFileDialog import *
 import pyglet
-from tkinter import filedialog as fd
 from pathlib import Path
-import googlesearch
+import requests
 from bs4 import BeautifulSoup
 import urllib2
-import threading
+import googlesearch
+import time  
+from time import sleep  
+#import pygame
 
-window= Tk()
-player=pyglet.media.Player()
-pyglet.options['audio'] = ('pulse', 'openal', 'silent')
-filename = []
-song = []
+fileName = []
 k = 0
 
-T=Text(window,height=30,width=50)
-def playSong(): 
-	#pyglet.media.load()
-	player.play()	
-
-def pauseSong():
-	player.pause()
-
-
-def openSong():
-	# player.queue("/home/sunidhi/Music/temp.mp3")
-	global filename, k
-	filename.append(fd.askopenfilename(parent=window))
-	print filename[k]
-	
-	song.append(pyglet.media.load(filename[k]))
-	player.queue(song[k])	
-	#print filename
-	p = Path(filename[k])
-	songName = p.name
-	print songName 
-	lyrics=ssearch(songName)
-	T.insert(INSERT, lyrics)
-	k = k+1
-
-def ssearch(songName):
-	query = songName +" az lyrics"
-	#print query
-	songLink = ''
-	for link in googlesearch.search(query,tld="com",lang='en',num=10,stop=1,pause=2.0):
-		print(link)
-		# temp = link.find("https://www.azlyrics.com/lyrics")
-		# if temp != -1:
-		# 	songLink = temp
-		# 	print songLink
-		# 	break
-		if "https://www.azlyrics.com/lyrics" in link:
-			songLink = link
-			break
-	print songLink
-
-	page=urllib2.urlopen(songLink)
-	soup = BeautifulSoup(page, 'html.parser')
-	# print soup
-	content=soup.find('div',class_="col-xs-12 col-lg-8 text-center")
-	# print content
-	# print list(content.children)
-	return list(content.children)[12].get_text()
-	
-#A=Button(window, text="Play",command=t1.start())
-#B=Button(window, text="Pause",command=t2.start())
-A=Button(window, text="Play",command=playSong)
-B=Button(window, text="Pause",command=pauseSong)
-C=Button(window, text="OpenSong",command=openSong)
-
-A.pack(padx=15, pady=5, side=LEFT)
-B.pack(padx=20, pady=10, side=LEFT)
-C.pack(padx=30,pady=45,side=LEFT)
+window = Tk()
+window.wm_title("Media Player")
+T = Text(window, height=30, width=60)
 T.pack()
 
+pyglet.options['audio'] = ('pulse','openal','silent')
+player = pyglet.media.Player()
+
+def lyricsScratch(songName):
+	query = songName + ' az lyrics'
+	for j in googlesearch.search(query, tld='com', lang='en', num=10, stop=1, pause=2.0):
+		print(j)
+		if 'https://www.azlyrics.com/lyrics/' in j:
+				link = j
+				print j+' hi'
+				break
+	
+	#manager = urllib3.PoolManager()
+	#page = manager.request('GET',link)
+	# page = requests.get('https://www.azlyrics.com/lyrics/shayneward/nopromises.html')
+	page=urllib2.urlopen(link)
+	soup = BeautifulSoup(page, 'html.parser')
+
+	parentDiv = soup.find('div',class_ = 'col-xs-12 col-lg-8 text-center')
+	#print parentDiv
+	return list(parentDiv.children)[12].get_text()
+
+def playMusic():
+	# music = pyglet.media.load(fileName)
+	# music.play()
+	# pyglet.app.run()
+	# pygame.mixer.music.play()
+	player.play()
+
+def pauseMusic():
+	# pygame.mixer.music.stop()
+	player.pause()
+
+def nextMusic():
+	player.next()
+
+def browsefunc():
+	global fileName
+	global player
+	global k
+	global songName
+	filePath = askopenfilename(parent=window)
+	fileName.append(filePath)
+	music = pyglet.media.load(fileName[k])
+	player.queue(music)
+
+	# pygame.mixer.music.load(filename[k])
+	p = Path(fileName[k])
+	songName = p.name
+	lyrics = lyricsScratch(songName)
+	#print type(lyrics)
+	indexLyricsNotReq = lyrics.find('if  (')
+	if indexLyricsNotReq != -1:
+		lyrics = lyrics[0:indexLyricsNotReq]	
+	T.insert(END, lyrics)
+	k = k+1
+	#print filename
+	
+openSong = Button(window, text ="open", command = browsefunc)
+play = Button(window, text ="play", command = playMusic)
+pause = Button(window, text ="pause", command = pauseMusic)
+next = Button(window, text ="next", command = nextMusic)
+#pyglet.app.run()
+
+
+next.pack()
+play.pack()
+pause.pack()
+openSong.pack()
 window.mainloop()
-#t1.join();t2.join()
