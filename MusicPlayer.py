@@ -9,20 +9,22 @@ import urllib2
 import googlesearch
 import time  
 from time import sleep  
-import player
 #import pygame
 
 fileName = []
 songName = []
+source = None
 k = 0
+i = 0
 player = pyglet.media.Player()
 FORWARD_REWIND_JUMP_TIME = 10
 
 def playMusic():
 	player.play()
-	# if source: #lyrics
-	# 	if player.time == source.duration-1:
-	# 		showLyrics()
+	# while True:
+	# 	if source: #lyrics
+	# 		if player.time in range(source.duration - 2, source.duration):
+	# 			showLyrics()
 
 def pauseMusic():
 	player.pause()
@@ -37,10 +39,13 @@ def add_to_queue(audio_file):
 	source = pyglet.media.load(audio_file)
 	player.queue(source)
 	print(source)
+	print type(source)
 
 def reset_player():
+	global player
 	player.pause()
 	player.delete()
+	player = pyglet.media.Player()
 
 def is_playing():
 	try:
@@ -71,12 +76,18 @@ def volume():
 def elapsed_play_duration():
 	return player.time
 
-# @volume.setter
-# def volume(volume):
-# 	player.volume = volume
-
 def stop():
 	reset_player()
+	T.configure(state='normal')
+	playlist.configure(state='normal')
+	playlist.delete('1.0',END)
+	T.delete('1.0',END)
+	T.configure(state='disabled')
+	playlist.configure(state='disabled')
+	k = 0
+	i = 0
+	fileName.clear()
+	songName.clear()
 
 def mute():
 	player.volume = 0.0
@@ -127,14 +138,24 @@ def lyricsScratch(songName):
 def browsefunc():
 	global fileName
 	global player
-	global songName,k
+	global songName,k,i
 	filePath = askopenfilename(parent=window)
 	fileName.append(filePath)
 	add_to_queue(filePath)
+	p = Path(fileName[i])
+	i = i+1
+	playlist.configure(state='normal')	
+	playlist.insert(END, "\n" + p.name)
+	playlist.configure(state='disabled')
+
 	if k==0:
 		showLyrics()
-
+	# if source:
+	# 	duration = (player.source).duration
+	# else:
+	# 	duration = 100
 	# pygame.mixer.music.load(filename[k])
+
 def showLyrics():
 	global k
 	p = Path(fileName[k])
@@ -151,22 +172,41 @@ def showLyrics():
 if __name__ == '__main__':
 	window = Tk()
 	window.resizable(width=False, height=False)
-	pyglet.options['audio'] = ('pulse','openal','silent')
+	window.wm_title("Music War")
+	#pyglet.options['audio'] = ('pulse','openal','silent')
 	
-	openSong = Button(window, text ="open", command = browsefunc)
+	open_song = PhotoImage(file='open-folder.png')
+	openSong = Button(window, image = open_song, command = browsefunc)
 	play_button=PhotoImage(file='play-button.png')
 	play = Button(window, image = play_button, command = playMusic)
-	pause = Button(window, text ="pause", command = pauseMusic)
-	next = Button(window, text ="next", command = nextMusic)
+	pause_button=PhotoImage(file='pause-button.png')
+	pause = Button(window, image =pause_button, command = pauseMusic)
+	next_button=PhotoImage(file='right-chevron.png')
+	next = Button(window, image =next_button, command = nextMusic)
+	fast_button = PhotoImage(file='fast-forward.png')
+	fastButton = Button(window, image = fast_button, command = fast_forward)
+	rewind_button = PhotoImage(file='rewind.png')
+	rewindButton = Button(window, image = rewind_button, command = rewind)
+	stop_button = PhotoImage(file='stop.png')
+	stopButton = Button(window, image = stop_button, command = stop)
+	# unmute_button = PhotoImage(file='unmute.png')
+	# unmuteButton = Button(window, image = unmute_button, command = unmute(0.6))
 
 	T = Text(window,state = 'disabled', height=30, width=60)
-	window.wm_title("Media Player")
-	T.pack()
-	
-	next.pack()
-	play.pack()
-	pause.pack()
-	openSong.pack()
+	T.pack(padx=2, pady=0,side=LEFT)
+
+	playlist = Text(window,state = 'disabled', height=30, width=30)
+	playlist.pack(padx=2,pady=0,side= LEFT)
+
+	openSong.pack(padx=5,pady=10,side=TOP)
+	play.pack(padx=5,pady=10,side=TOP)
+	pause.pack(padx=5,pady=10,side=TOP)
+	next.pack(padx=5,pady=10,side=TOP)
+	fastButton.pack(padx=5,pady=10,side=TOP)
+	rewindButton.pack(padx=5,pady=10,side=TOP)
+	stopButton.pack(padx=5,pady=10,side=TOP)
+	# muteButton.pack(padx=5,pady=10,side=TOP)
+	# unmuteButton.pack(padx=5,pady=10,side=TOP)
 	window.mainloop()
 
 #pyglet.app.run()
