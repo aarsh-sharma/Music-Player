@@ -156,6 +156,21 @@ def browsefunc():
 	# 	duration = 100
 	# pygame.mixer.music.load(filename[k])
 
+def listOfSongs():
+	return 
+
+def getCategory():
+	return
+
+def getArtist():
+	return
+
+def getSongDetails():
+	return
+
+def recentSongList():
+	return 
+
 def showLyrics():
 	global k
 	p = Path(fileName[k])
